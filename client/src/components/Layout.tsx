@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../auth";
 
@@ -10,8 +11,17 @@ const links = [
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const [demo, setDemo] = useState(false);
+  useEffect(() => {
+    fetch("/api/health").then((r) => r.json()).then((h) => setDemo(h.ai === "mock")).catch(() => {});
+  }, []);
   return (
     <div className="min-h-screen">
+      {demo && (
+        <div className="bg-amber-100 px-4 py-2 text-center text-xs text-amber-900">
+          Demo mode: AI responses are sample data, not a real analysis of your resume.
+        </div>
+      )}
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <NavLink to="/" className="flex items-center gap-2 font-bold">

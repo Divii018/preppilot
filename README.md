@@ -74,6 +74,10 @@ cd client && npm install && npm run dev                              # UI on :51
 
 The database schema is applied automatically on startup.
 
+## Deploying (Render)
+
+`render.yaml` is a Render Blueprint. It creates one web service (the API also serves the built React app) and a PostgreSQL database. In the Render dashboard, choose **New → Blueprint**, pick this repository and click **Apply**. The site starts in demo mode. To use real AI, set `AI_MOCK=false` and add `ANTHROPIC_API_KEY` under the service's Environment settings.
+
 ## Tests
 
 ```bash

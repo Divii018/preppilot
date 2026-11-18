@@ -1,0 +1,29 @@
+# Render Blueprint: one web service (API + website) and a free PostgreSQL database.
+services:
+  - type: web
+    name: preppilot
+    runtime: node
+    plan: free
+    buildCommand: cd client && npm ci --include=dev && npm run build && cd ../server && npm ci --include=dev && npm run build
+    startCommand: cd server && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: preppilot-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      # Demo mode: canned AI answers, no API key needed. Set to "false" and add ANTHROPIC_API_KEY to use real AI.
+      - key: AI_MOCK
+        value: "true"
+
+databases:
+  - name: preppilot-db
+    plan: free
+    databaseName: preppilot
+    user: preppilot

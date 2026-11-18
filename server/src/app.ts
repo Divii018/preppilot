@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -38,6 +41,15 @@ export function createApp(ai: AIProvider) {
   app.use("/api/analyses", requireAuth, aiLimiter, analysesRouter(ai));
   app.use("/api/interviews", requireAuth, aiLimiter, interviewsRouter(ai));
   app.use("/api/stats", requireAuth, statsRouter);
+
+  app.use("/api", (_req, res) => res.status(404).json({ error: "Not found" }));
+
+  // In production the API also serves the built React app, so the whole site is one service.
+  const clientDist = process.env.CLIENT_DIST ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../client/dist");
+  if (config.NODE_ENV === "production" && fs.existsSync(path.join(clientDist, "index.html"))) {
+    app.use(express.static(clientDist, { index: false, maxAge: "1y", immutable: true }));
+    app.get("/{*splat}", (_req, res) => res.sendFile(path.join(clientDist, "index.html"), { maxAge: 0 }));
+  }
 
   app.use((_req, res) => res.status(404).json({ error: "Not found" }));
   app.use(errorHandler);
