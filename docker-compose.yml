@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: preppilot
+      POSTGRES_PASSWORD: preppilot
+      POSTGRES_DB: preppilot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U preppilot"]
+      interval: 3s
+      retries: 10
+
+  server:
+    build: ./server
+    environment:
+      DATABASE_URL: postgres://preppilot:preppilot@db:5432/preppilot
+      JWT_SECRET: ${JWT_SECRET:-local-docker-secret-change-me}
+      CLIENT_ORIGIN: http://localhost:8080
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      AI_MOCK: ${AI_MOCK:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  client:
+    build: ./client
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+
+volumes:
+  pgdata:
